@@ -13,7 +13,7 @@ class ToolHTTPX:
             subfinder_output = subprocess.check_output(subfinder_command, universal_newlines=True)
             subdomains = list(set(subfinder_output.strip().split('\n')))
         except subprocess.CalledProcessError as e:
-            print(f"An error occurred while running the subfinder command: {str(e)}")
+            print(f"An error occurred while running the subfinder command: {e.output.strip()}")
             return
 
         for subdomain in subdomains:
@@ -21,10 +21,12 @@ class ToolHTTPX:
                 httpx_command[-1] = subdomain
                 httpx_output = subprocess.check_output(httpx_command, universal_newlines=True)
                 httpx_output = httpx_output.strip().split('\n')
-                if "200 OK" in httpx_output:
+                status_code= httpx_output[0].split()[1]
+                if status_code.startswith("2") or status_code.startswith("3"):
                     print(f"Subdomain {subdomain} is live.")
                 else:
-                    print(f"Subdomain {subdomain} returned a non-200 status code.")
+                    print(f"Subdomain {subdomain} is dead.")
+                self.subdomains.append(subdomain)
             except subprocess.CalledProcessError:
                 print(f"An error occurred for subdomain {subdomain}.")
 
