@@ -1,34 +1,27 @@
 import subprocess
 
-
 class ToolHTTPX:
-    def __init__(self, domain):
-        self.domain = domain
-        self.subdomains = []
+    def __init__(self, subdomains):
+        self.subdomains = subdomains
 
     def enumerate_subdomains(self):
-        subfinder_command = ['subfinder', '-d', self.domain]
-        httpx_command = ['httpx', '-title', '-tech-detect', '-status-code', '-title', '-follow-redirects']
-        try:
-            subfinder_output = subprocess.check_output(subfinder_command, universal_newlines=True)
-            subdomains = list(set(subfinder_output.strip().split('\n')))
-        except subprocess.CalledProcessError as e:
-            print(f"An error occurred while running the subfinder command: {e.output.strip()}")
-            return
-
-        for subdomain in subdomains:
+        httpx_command = ['httpx', '-status-code']
+        httpx_output = subprocess.check_output(httpx_command, universal_newlines=True)
+        self.subdomains = list(set(httpx_output.strip().splitlines()))
+        print(self.subdomains)
+        for subdomain in self.subdomains:
             try:
-                httpx_command[-1] = subdomain
-                httpx_output = subprocess.check_output(httpx_command, universal_newlines=True)
-                httpx_output = httpx_output.strip().split('\n')
-                status_code= httpx_output[0].split()[1]
-                if status_code.startswith("2") or status_code.startswith("3"):
-                    print(f"Subdomain {subdomain} is live.")
+                httpx_command_https = httpx_command + [f"https://{subdomain}/"]
+                # httpx_output_https = subprocess.check_output(httpx_command_https, stderr=subprocess.STDOUT, universal_newlines=True)
+                if any(response.startswith(("2", "3")) for response in httpx_command_https.strip().split('\n')):
+                    print(f"Subdomain {subdomain} (HTTPS) is live.")
+                    subdomain.append(f"https://{subdomain}")
                 else:
-                    print(f"Subdomain {subdomain} is dead.")
-                self.subdomains.append(subdomain)
-            except subprocess.CalledProcessError:
-                print(f"An error occurred for subdomain {subdomain}.")
+                    print(f"Subdomain {subdomain} (HTTPS) is dead.")
+                    subdomain.append(f"https://{subdomain}")
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred for subdomain {subdomain}")
 
     def get_unique_subdomains(self):
         return self.subdomains
+
