@@ -13,10 +13,10 @@ if __name__ == "__main__":
              'production-sandbox.a.bugcrowd.com', 'files.bugcrowd.com', 'login.bugcrowd.com',
              'submissions.bugcrowd.com', 'documentation.bugcrowd.com', 'assetinventory.bugcrowd.com',
              'pages.bugcrowd.com']
-    tool = ToolHTTPX("bugcrowd.com")
+    tool = ToolHTTPX(array)
     tool.enumerate_subdomains()
-    unique_subdomains = tool.get_unique_subdomains()
-    print(f"Unique subdomains found: {unique_subdomains}")
+    # unique_subdomains = tool.get_unique_subdomains()
+    # print(f"Unique subdomains found: {unique_subdomains}")
 
 
 
